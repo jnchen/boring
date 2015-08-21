@@ -1,68 +1,65 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#define ARRAY_SIZE 84   //此处修改数组大小 
 
-void ShowState(int iNumber[],int bState[], int n, int nKey){
+double iNumber[ARRAY_SIZE+1] = {
+	0,58643.5,38161.5,60610,178172.5,51062.5,40185,33288,8607,48488,1710,15779.5,47348,16644,8322,48488,241395,59222.5,115415.5,42427,15675,60876,42085,54549,17242.5,38807.5,29469,23579,30305,28215,6935,78793,4104,7837.5,45543,20805,23579,61275,12910.5,4303.5,52240.5,26353,12483,69445,4303.5,4303.5,32680,24111,15257,8322,2869,5738,12122,15675,42892.5,45543,37449,27740,14345,8607,23512.5,24244,6840,60876,34675,16644,17214,18648.5,15675,18183,13680,40850,29469,31901,27740,8607,8607,4702.5,24244,6840,92653.5,95313.5,24244,22230,3135
+};//首位没用，初始化是也要写 
+
+void ShowState(FILE* fp,int bState[], int n, double nKey){
 	int i,flag=1;
 	for (i = 1; i<n; i++){
 		if (bState[i] == 1)
 			if (flag){
-				printf("%d", iNumber[i]);
+				printf("%g", iNumber[i]);
+				fprintf(fp,"%g",iNumber[i]);
 				flag = 0;
 			}
-			else
-				printf("+%d", iNumber[i]);
+			else{
+				printf("+%g", iNumber[i]);
+				fprintf(fp,"+%g",iNumber[i]);
+			}
+				
 	}
-	printf("=%d\n", nKey);
+	printf("=%g\n", nKey);
+	fprintf(fp,"=%g\n",nKey);
 }
-void Func(int iNumber[],int nPos, int bAdd, int nSum, int bState[], int len, int nKey){
+void Func(FILE* fp,int nPos, int bAdd, double nSum, int bState[], int len, double nKey){
 	if (bAdd == 1){
 		nSum += iNumber[nPos];
 		bState[nPos] = 1;
 	}
 	else
 		bState[nPos] = 0;
-	if (nSum == nKey){
-		ShowState(iNumber,bState, len, nKey);
+	if(nSum>nKey)return;
+	else if (nSum == nKey){
+		ShowState(fp,bState, len, nKey);
 		return;
 	}
 	if (nPos + 1 == len)return;
-	Func(iNumber,nPos + 1, 1, nSum, bState, len, nKey);
-	Func(iNumber,nPos + 1, 0, nSum, bState, len, nKey);
-}
-int checkSum(int iNumber[],int len,int nKey){
-	int i,sum=0;
-	for(i=1;i<len;i++){
-		sum+=iNumber[i];
-	}
-	if(sum>nKey)
-		return 1;
-	else 
-		return 0;
+	Func(fp,nPos + 1, 1, nSum, bState, len, nKey);
+	Func(fp,nPos + 1, 0, nSum, bState, len, nKey);
 }
 
 int main(){
-	int *iNumber,*tNumber, i, nKey,len;
-	printf("Please input the len of Array:");
-	scanf("%d",&len);
-	if(len>0){
-		len++;
-		iNumber = (int *)malloc(sizeof(int)*len);
-		tNumber = (int *)malloc(sizeof(int)*len);
-		memset(tNumber,0,sizeof(int)*len);
-		
-		iNumber[0] = 0;
-		printf("Please input the Number of Array:");
-		for(i=1;i<len;i++){
-			scanf("%d",iNumber+i);
-		}
-		printf("Please input the Sum:");
-		scanf("%d",&nKey);
-		if(checkSum(iNumber,len,nKey)){
-			Func(iNumber,0,0,0,tNumber,len,nKey);
-		}else{
-			printf("The Sum too Big!!\n");
-		}
+	int *tNumber, i;
+	double nKey,sum=0.0;
+	char * filename="output.txt";
+	FILE *fp;
+	for (i = 0; i < ARRAY_SIZE	+1; ++i){
+		sum += iNumber[i];
 	}
+	tNumber = (int*)malloc(sizeof(int)*(ARRAY_SIZE+1));
+	memset(tNumber, 0, sizeof(int)*(ARRAY_SIZE+1));
+	printf("Please input the Sum:");
+	scanf("%lf", &nKey);
+	if (sum < nKey) {printf("The Sum is too Big!!");
+		return 0;
+	}
+	fp = fopen(filename,"w");
+	if(fp==NULL)return 0;	
+	Func(fp,0, 0, 0, tNumber, ARRAY_SIZE+1, nKey);
+	fclose(fp);
 	return 0;
 }
